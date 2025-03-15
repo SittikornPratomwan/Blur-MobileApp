@@ -1,4 +1,4 @@
 # blacklistseller
 
-<img src="1.png" alt="Alt text" width="120">
+<img src="image/1.png" alt="Alt text" width="120">
 
