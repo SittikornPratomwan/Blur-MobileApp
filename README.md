@@ -1,3 +1,4 @@
 # blacklistseller
 
-![Alt text](image/1.png)
+<img src="1.png" alt="Alt text" width="120">
+
