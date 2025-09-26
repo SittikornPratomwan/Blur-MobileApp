@@ -1,13 +1,16 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_application_1/firebase_options.dart';
 import 'package:flutter_application_1/router.dart';
 import 'package:flutter_application_1/states/authen.dart'; // หน้าล็อกอิน
 import 'package:flutter_application_1/states/home.dart'; // หน้าหลักของแอป
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(); // ต้องรัน Firebase ก่อนใช้
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  ); // ต้องรัน Firebase ก่อนใช้
   runApp(MyApp());
 }
 
