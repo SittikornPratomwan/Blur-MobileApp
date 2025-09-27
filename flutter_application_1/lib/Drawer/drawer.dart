@@ -1,12 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'setting.dart';
 import 'history.dart';
+import '../services/auth_service.dart';
+import '../Authen/login_page.dart';
 
 /// Reusable app drawer moved out of home.dart
 class AppDrawer extends StatelessWidget {
   final void Function(int index)? onPageChanged;
+  final AuthService _authService = AuthService();
 
-  const AppDrawer({Key? key, this.onPageChanged}) : super(key: key);
+  AppDrawer({Key? key, this.onPageChanged}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -23,18 +27,45 @@ class AppDrawer extends StatelessWidget {
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                children: const [
-                  CircleAvatar(
+                children: [
+                  const CircleAvatar(
                     radius: 28,
                     backgroundColor: Colors.white24,
                     child: Icon(Icons.person, color: Colors.white),
                   ),
-                  SizedBox(height: 12),
-                  Text('User Name',
-                      style: TextStyle(color: Colors.white, fontSize: 18)),
-                  SizedBox(height: 4),
-                  Text('user@example.com',
-                      style: TextStyle(color: Colors.white70, fontSize: 12)),
+                  const SizedBox(height: 12),
+                  StreamBuilder<User?>(
+                    stream: FirebaseAuth.instance.authStateChanges(),
+                    builder: (context, snapshot) {
+                      if (snapshot.hasData && snapshot.data != null) {
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              snapshot.data!.displayName ?? 'ผู้ใช้งาน',
+                              style: const TextStyle(color: Colors.white, fontSize: 18)
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              snapshot.data!.email ?? 'ไม่มีอีเมล',
+                              style: const TextStyle(color: Colors.white70, fontSize: 12)
+                            ),
+                          ],
+                        );
+                      } else {
+                        return const Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text('ผู้ใช้งาน',
+                                style: TextStyle(color: Colors.white, fontSize: 18)),
+                            SizedBox(height: 4),
+                            Text('กรุณาเข้าสู่ระบบ',
+                                style: TextStyle(color: Colors.white70, fontSize: 12)),
+                          ],
+                        );
+                      }
+                    },
+                  ),
                 ],
               ),
             ),

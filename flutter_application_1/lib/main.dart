@@ -30,7 +30,17 @@ class MyApp extends StatelessWidget {
           foregroundColor: Colors.white,
         ),
       ),
-      home: const LoginPage(),
+      home: StreamBuilder<User?>(
+        stream: FirebaseAuth.instance.authStateChanges(),
+        builder: (context, snapshot) {
+          // If user is logged in, go to HomePage
+          if (snapshot.hasData) {
+            return const HomePage();
+          }
+          // Otherwise, show login page
+          return const LoginPage();
+        },
+      ),
     );
   }
 }

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-// ...existing imports...
 import '../widgets/snackbar.dart';
 import '../Homepage/home.dart';
+import '../services/auth_service.dart';
 
 class SignIn extends StatefulWidget {
   const SignIn({Key? key}) : super(key: key);
@@ -12,6 +12,7 @@ class SignIn extends StatefulWidget {
 }
 
 class _SignInState extends State<SignIn> {
+  final AuthService _authService = AuthService();
   TextEditingController loginEmailController = TextEditingController();
   TextEditingController loginPasswordController = TextEditingController();
 
@@ -19,6 +20,7 @@ class _SignInState extends State<SignIn> {
   final FocusNode focusNodePassword = FocusNode();
 
   bool _obscureTextPassword = true;
+  bool _isLoading = false;
 
   @override
   void dispose() {
@@ -112,7 +114,9 @@ class _SignInState extends State<SignIn> {
                             ),
                           ),
                           onSubmitted: (_) {
-                            _toggleSignInButton();
+                            if (!_isLoading) {
+                              _signInWithEmailAndPassword();
+                            }
                           },
                           textInputAction: TextInputAction.go,
                         ),
@@ -144,22 +148,26 @@ class _SignInState extends State<SignIn> {
                   child: InkWell(
                     borderRadius: BorderRadius.circular(5.0),
                     splashColor: const Color(0xFF1B5E20).withOpacity(0.28),
-                    onTap: () {
-                      // Navigate to Home and replace the current login route
-                      Navigator.of(context).pushReplacement(
-                        MaterialPageRoute(builder: (_) => const HomePage()),
-                      );
-                    },
-                    child: const Padding(
-                      padding: EdgeInsets.symmetric(
+                    onTap: _isLoading ? null : _signInWithEmailAndPassword,
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
                           vertical: 12.0, horizontal: 44.0),
-                      child: Text(
-                        'LOGIN',
-                        style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 25.0,
-                            fontFamily: 'WorkSansBold'),
-                      ),
+                      child: _isLoading
+                          ? const SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2.0,
+                                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                              ),
+                            )
+                          : const Text(
+                              'LOGIN',
+                              style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 25.0,
+                                  fontFamily: 'WorkSansBold'),
+                            ),
                     ),
                   ),
                 ),
@@ -169,7 +177,7 @@ class _SignInState extends State<SignIn> {
           Padding(
             padding: const EdgeInsets.only(top: 10.0),
             child: TextButton(
-                onPressed: () {},
+                onPressed: _forgotPassword,
                 child: const Text(
                   'Forgot Password?',
                   style: TextStyle(
@@ -273,8 +281,105 @@ class _SignInState extends State<SignIn> {
     );
   }
 
-  void _toggleSignInButton() {
-    CustomSnackBar(context, const Text('Login button pressed'));
+  // Sign in with email and password
+  Future<void> _signInWithEmailAndPassword() async {
+    // Validate form fields
+    if (!_validateForm()) return;
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      // Sign in with Firebase Auth
+      await _authService.signInWithEmailAndPassword(
+        loginEmailController.text.trim(),
+        loginPasswordController.text,
+      );
+
+      // Navigate to home page on successful login
+      if (mounted) {
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (_) => const HomePage()),
+        );
+      }
+    } catch (e) {
+      // Show error message
+      if (mounted) {
+        CustomSnackBar(context, Text(e.toString()));
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
+  // Validate form fields
+  bool _validateForm() {
+    final email = loginEmailController.text.trim();
+    final password = loginPasswordController.text;
+
+    if (email.isEmpty) {
+      CustomSnackBar(context, const Text('กรุณากรอกอีเมล'));
+      focusNodeEmail.requestFocus();
+      return false;
+    }
+
+    if (!_isValidEmail(email)) {
+      CustomSnackBar(context, const Text('รูปแบบอีเมลไม่ถูกต้อง'));
+      focusNodeEmail.requestFocus();
+      return false;
+    }
+
+    if (password.isEmpty) {
+      CustomSnackBar(context, const Text('กรุณากรอกรหัสผ่าน'));
+      focusNodePassword.requestFocus();
+      return false;
+    }
+
+    if (password.length < 6) {
+      CustomSnackBar(context, const Text('รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร'));
+      focusNodePassword.requestFocus();
+      return false;
+    }
+
+    return true;
+  }
+
+  // Check if email format is valid
+  bool _isValidEmail(String email) {
+    return RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(email);
+  }
+
+  // Forgot password function
+  Future<void> _forgotPassword() async {
+    final email = loginEmailController.text.trim();
+    
+    if (email.isEmpty) {
+      CustomSnackBar(context, const Text('กรุณากรอกอีเมลเพื่อรีเซ็ตรหัสผ่าน'));
+      focusNodeEmail.requestFocus();
+      return;
+    }
+
+    if (!_isValidEmail(email)) {
+      CustomSnackBar(context, const Text('รูปแบบอีเมลไม่ถูกต้อง'));
+      focusNodeEmail.requestFocus();
+      return;
+    }
+
+    try {
+      await _authService.resetPassword(email);
+      if (mounted) {
+        CustomSnackBar(context, const Text('ส่งลิงก์รีเซ็ตรหัสผ่านไปยังอีเมลของคุณแล้ว'));
+      }
+    } catch (e) {
+      if (mounted) {
+        CustomSnackBar(context, Text(e.toString()));
+      }
+    }
   }
 
   void _toggleLogin() {
