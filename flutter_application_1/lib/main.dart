@@ -3,7 +3,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/firebase_options.dart';
 import 'package:flutter_application_1/router.dart';
-import 'package:flutter_application_1/states/authen.dart'; // หน้าล็อกอิน
+import 'package:flutter_application_1/Authen/login_page.dart'; // หน้าล็อกอิน
 import 'package:flutter_application_1/states/home.dart'; // หน้าหลักของแอป
 
 Future<void> main() async {
@@ -39,7 +39,7 @@ class AuthCheck extends StatelessWidget {
         } else if (snapshot.hasData) {
           return homepage(); // ถ้าล็อกอินแล้ว ไปหน้า Home
         } else {
-          return Authen(); // ถ้ายังไม่ได้ล็อกอิน ไปหน้า Login
+          return const LoginPage(); // ถ้ายังไม่ได้ล็อกอิน ไปหน้า Login
         }
       },
     );
