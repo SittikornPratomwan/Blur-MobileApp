@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'sign_in.dart';
-import 'sign_up.dart';
+import 'sigin_up.dart';
 import '../theme.dart';
 
 class LoginPage extends StatefulWidget {
@@ -60,11 +60,11 @@ class _LoginPageState extends State<LoginPage>
                   width: 200,
                   child: Center(
                     child: Image.asset(
-                      'images/logo.png',
+                      'images/log.png',
                       fit: BoxFit.contain,
                       height: MediaQuery.of(context).size.height > 800 ? 160 : 140,
                         errorBuilder: (context, error, stackTrace) => const Text(
-                          'Blacklist Seller App',
+                          'Logo',
                           style: TextStyle(
                             fontSize: 32,
                             fontWeight: FontWeight.bold,
@@ -211,8 +211,8 @@ class _LoginPageState extends State<LoginPage>
   void _onSignUpButtonPress() {
     _pageController.animateToPage(1,
         duration: const Duration(milliseconds: 500), curve: Curves.decelerate);
-        setState(() {
-          _currentIndex = 1;
-        });
-      }
-    }
+    setState(() {
+      _currentIndex = 1;
+    });
+  }
+}

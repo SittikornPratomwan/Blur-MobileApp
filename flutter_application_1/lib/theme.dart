@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 
 class CustomTheme {
-  const CustomTheme._();
+  const CustomTheme();
 
-  static const Color loginGradientStart = Color(0xFFfbab66);
-  static const Color loginGradientEnd = Color(0xFFf7931e);
+  // Light gray gradient for a subtle login background
+  static const Color loginGradientStart = Color(0xFFF5F5F5); // Very light gray
+  static const Color loginGradientEnd = Color(0xFFE0E0E0);   // Slightly darker gray
   static const Color white = Color(0xFFFFFFFF);
   static const Color black = Color(0xFF000000);
 

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:google_sign_in/google_sign_in.dart';
+// ...existing imports...
 import '../widgets/snackbar.dart';
 import '../Homepage/home.dart';
 
@@ -20,10 +19,6 @@ class _SignInState extends State<SignIn> {
   final FocusNode focusNodePassword = FocusNode();
 
   bool _obscureTextPassword = true;
-  bool _isLoading = false;
-
-  final FirebaseAuth _auth = FirebaseAuth.instance;
-  final GoogleSignIn _googleSignIn = GoogleSignIn();
 
   @override
   void dispose() {
@@ -149,26 +144,22 @@ class _SignInState extends State<SignIn> {
                   child: InkWell(
                     borderRadius: BorderRadius.circular(5.0),
                     splashColor: const Color(0xFF1B5E20).withOpacity(0.28),
-                    onTap: _isLoading ? null : _signInWithEmailPassword,
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
+                    onTap: () {
+                      // Navigate to Home and replace the current login route
+                      Navigator.of(context).pushReplacement(
+                        MaterialPageRoute(builder: (_) => const HomePage()),
+                      );
+                    },
+                    child: const Padding(
+                      padding: EdgeInsets.symmetric(
                           vertical: 12.0, horizontal: 44.0),
-                      child: _isLoading 
-                        ? const SizedBox(
-                            height: 25.0,
-                            width: 25.0,
-                            child: CircularProgressIndicator(
-                              color: Colors.white,
-                              strokeWidth: 2.0,
-                            ),
-                          )
-                        : const Text(
-                            'LOGIN',
-                            style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 25.0,
-                                fontFamily: 'WorkSansBold'),
-                          ),
+                      child: Text(
+                        'LOGIN',
+                        style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 25.0,
+                            fontFamily: 'WorkSansBold'),
+                      ),
                     ),
                   ),
                 ),
@@ -260,7 +251,8 @@ class _SignInState extends State<SignIn> {
               Padding(
                 padding: const EdgeInsets.only(top: 10.0),
                 child: GestureDetector(
-                  onTap: _isLoading ? null : _signInWithGoogle,
+                  onTap: () => CustomSnackBar(
+                      context, const Text('Google button pressed')),
                   child: Container(
                     padding: const EdgeInsets.all(15.0),
                     decoration: const BoxDecoration(
@@ -289,130 +281,5 @@ class _SignInState extends State<SignIn> {
     setState(() {
       _obscureTextPassword = !_obscureTextPassword;
     });
-  }
-
-  // Firebase Email/Password Sign In
-  Future<void> _signInWithEmailPassword() async {
-    if (loginEmailController.text.isEmpty || loginPasswordController.text.isEmpty) {
-      CustomSnackBar(context, const Text('Please enter both email and password'));
-      return;
-    }
-
-    setState(() {
-      _isLoading = true;
-    });
-
-    try {
-      UserCredential userCredential = await _auth.signInWithEmailAndPassword(
-        email: loginEmailController.text.trim(),
-        password: loginPasswordController.text.trim(),
-      );
-
-      if (userCredential.user != null) {
-        CustomSnackBar(context, const Text('Login successful!'));
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (_) => const HomePage()),
-        );
-      }
-    } on FirebaseAuthException catch (e) {
-      String errorMessage = 'Login failed';
-      
-      switch (e.code) {
-        case 'user-not-found':
-          errorMessage = 'No user found with this email';
-          break;
-        case 'wrong-password':
-          errorMessage = 'Wrong password provided';
-          break;
-        case 'invalid-email':
-          errorMessage = 'Invalid email address';
-          break;
-        case 'user-disabled':
-          errorMessage = 'This user account has been disabled';
-          break;
-        case 'too-many-requests':
-          errorMessage = 'Too many failed attempts. Try again later';
-          break;
-        case 'invalid-credential':
-          errorMessage = 'Invalid email or password';
-          break;
-        default:
-          errorMessage = 'Login failed: ${e.message}';
-      }
-      
-      CustomSnackBar(context, Text(errorMessage));
-    } catch (e) {
-      CustomSnackBar(context, Text('An error occurred: $e'));
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-      }
-    }
-  }
-
-  // Firebase Google Sign In
-  Future<void> _signInWithGoogle() async {
-    setState(() {
-      _isLoading = true;
-    });
-
-    try {
-      final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
-      
-      if (googleUser == null) {
-        // User canceled the sign-in
-        setState(() {
-          _isLoading = false;
-        });
-        return;
-      }
-
-      final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
-
-      final credential = GoogleAuthProvider.credential(
-        accessToken: googleAuth.accessToken,
-        idToken: googleAuth.idToken,
-      );
-
-      UserCredential userCredential = await _auth.signInWithCredential(credential);
-
-      if (userCredential.user != null) {
-        CustomSnackBar(context, const Text('Google sign-in successful!'));
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (_) => const HomePage()),
-        );
-      }
-    } on FirebaseAuthException catch (e) {
-      String errorMessage = 'Google sign-in failed';
-      
-      switch (e.code) {
-        case 'account-exists-with-different-credential':
-          errorMessage = 'An account already exists with a different sign-in method';
-          break;
-        case 'invalid-credential':
-          errorMessage = 'Invalid Google credentials';
-          break;
-        case 'operation-not-allowed':
-          errorMessage = 'Google sign-in is not enabled';
-          break;
-        case 'user-disabled':
-          errorMessage = 'This user account has been disabled';
-          break;
-        default:
-          errorMessage = 'Google sign-in failed: ${e.message}';
-      }
-      
-      CustomSnackBar(context, Text(errorMessage));
-    } catch (e) {
-      CustomSnackBar(context, Text('An error occurred: $e'));
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-      }
-    }
   }
 }
