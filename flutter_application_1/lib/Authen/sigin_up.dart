@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../widgets/snackbar.dart';
+import '../services/auth_service.dart';
+import '../Homepage/home.dart';
 
 class SignUp extends StatefulWidget {
   const SignUp({Key? key}) : super(key: key);
@@ -10,6 +12,7 @@ class SignUp extends StatefulWidget {
 }
 
 class _SignUpState extends State<SignUp> {
+  final AuthService _authService = AuthService();
   final FocusNode focusNodePassword = FocusNode();
   final FocusNode focusNodeConfirmPassword = FocusNode();
   final FocusNode focusNodeEmail = FocusNode();
@@ -17,6 +20,7 @@ class _SignUpState extends State<SignUp> {
 
   bool _obscureTextPassword = true;
   bool _obscureTextConfirmPassword = true;
+  bool _isLoading = false;
 
   TextEditingController signupEmailController = TextEditingController();
   TextEditingController signupNameController = TextEditingController();
@@ -197,7 +201,9 @@ class _SignUpState extends State<SignUp> {
                             ),
                           ),
                           onSubmitted: (_) {
-                            _toggleSignUpButton();
+                            if (!_isLoading) {
+                              _signUpWithEmailAndPassword();
+                            }
                           },
                           textInputAction: TextInputAction.go,
                         ),
@@ -229,17 +235,26 @@ class _SignUpState extends State<SignUp> {
                   child: InkWell(
                     borderRadius: BorderRadius.circular(5.0),
                     splashColor: const Color(0xFF1B5E20).withOpacity(0.28),
-                    onTap: () => _toggleSignUpButton(),
-                    child: const Padding(
-                      padding: EdgeInsets.symmetric(
+                    onTap: _isLoading ? null : _signUpWithEmailAndPassword,
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
                           vertical: 12.0, horizontal: 44.0),
-                      child: Text(
-                        'SIGN UP',
-                        style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 25.0,
-                            fontFamily: 'WorkSansBold'),
-                      ),
+                      child: _isLoading
+                          ? const SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2.0,
+                                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                              ),
+                            )
+                          : const Text(
+                              'SIGN UP',
+                              style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 25.0,
+                                  fontFamily: 'WorkSansBold'),
+                            ),
                     ),
                   ),
                 ),
@@ -251,8 +266,109 @@ class _SignUpState extends State<SignUp> {
     );
   }
 
-  void _toggleSignUpButton() {
-    CustomSnackBar(context, const Text('SignUp button pressed'));
+  // Sign up with email and password
+  Future<void> _signUpWithEmailAndPassword() async {
+    // Validate form fields
+    if (!_validateForm()) return;
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      // Create user with Firebase Auth
+      final userCredential = await _authService.createUserWithEmailAndPassword(
+        signupEmailController.text.trim(),
+        signupPasswordController.text,
+      );
+
+      // Update display name if user was created successfully
+      if (userCredential != null && userCredential.user != null) {
+        await userCredential.user!.updateDisplayName(signupNameController.text.trim());
+        await userCredential.user!.reload();
+      }
+
+      // Navigate to home page on successful registration
+      if (mounted) {
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (_) => const HomePage()),
+        );
+      }
+    } catch (e) {
+      // Show error message
+      if (mounted) {
+        CustomSnackBar(context, Text(e.toString()));
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
+  // Validate form fields
+  bool _validateForm() {
+    final name = signupNameController.text.trim();
+    final email = signupEmailController.text.trim();
+    final password = signupPasswordController.text;
+    final confirmPassword = signupConfirmPasswordController.text;
+
+    if (name.isEmpty) {
+      CustomSnackBar(context, const Text('กรุณากรอกชื่อ'));
+      focusNodeName.requestFocus();
+      return false;
+    }
+
+    if (name.length < 2) {
+      CustomSnackBar(context, const Text('ชื่อต้องมีอย่างน้อย 2 ตัวอักษร'));
+      focusNodeName.requestFocus();
+      return false;
+    }
+
+    if (email.isEmpty) {
+      CustomSnackBar(context, const Text('กรุณากรอกอีเมล'));
+      focusNodeEmail.requestFocus();
+      return false;
+    }
+
+    if (!_isValidEmail(email)) {
+      CustomSnackBar(context, const Text('รูปแบบอีเมลไม่ถูกต้อง'));
+      focusNodeEmail.requestFocus();
+      return false;
+    }
+
+    if (password.isEmpty) {
+      CustomSnackBar(context, const Text('กรุณากรอกรหัสผ่าน'));
+      focusNodePassword.requestFocus();
+      return false;
+    }
+
+    if (password.length < 6) {
+      CustomSnackBar(context, const Text('รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร'));
+      focusNodePassword.requestFocus();
+      return false;
+    }
+
+    if (confirmPassword.isEmpty) {
+      CustomSnackBar(context, const Text('กรุณายืนยันรหัสผ่าน'));
+      focusNodeConfirmPassword.requestFocus();
+      return false;
+    }
+
+    if (password != confirmPassword) {
+      CustomSnackBar(context, const Text('รหัสผ่านไม่ตรงกัน'));
+      focusNodeConfirmPassword.requestFocus();
+      return false;
+    }
+
+    return true;
+  }
+
+  // Check if email format is valid
+  bool _isValidEmail(String email) {
+    return RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(email);
   }
 
   void _toggleSignup() {

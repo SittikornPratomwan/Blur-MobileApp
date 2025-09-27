@@ -103,10 +103,26 @@ class AppDrawer extends StatelessWidget {
               ),
               child: ListTile(
                 leading: const Icon(Icons.logout, color: Colors.white),
-                title: const Text('Logout', style: TextStyle(color: Colors.white)),
-                onTap: () {
+                title: const Text('ออกจากระบบ', style: TextStyle(color: Colors.white)),
+                onTap: () async {
                   Navigator.of(context).pop();
-                  Navigator.of(context).pushReplacementNamed('/');
+                  try {
+                    await _authService.signOut();
+                    // Navigate to login page and clear all previous routes
+                    if (context.mounted) {
+                      Navigator.of(context).pushAndRemoveUntil(
+                        MaterialPageRoute(builder: (_) => const LoginPage()),
+                        (route) => false,
+                      );
+                    }
+                  } catch (e) {
+                    // Show error if logout fails
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text(e.toString())),
+                      );
+                    }
+                  }
                 },
               ),
             ),
