@@ -127,7 +127,7 @@ class _AppScaffoldState extends State<AppScaffold> {
               elevation: 8,
               shape: const CircleBorder(),
               child: Icon(widget.fabIcon ?? Icons.build, size: 28),
-              tooltip: 'แจ้งซ่อม',
+              tooltip: 'โพสต์',
             )
           : null,
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,

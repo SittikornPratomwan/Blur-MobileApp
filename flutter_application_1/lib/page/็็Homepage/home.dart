@@ -41,7 +41,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
   String getPageName() {
     switch (_selectedIndex) {
       case 0:
-        return 'หน้าแรก';
+        return 'Public';
       case 1:
         return 'แจ้งซ่อม';
       case 2:

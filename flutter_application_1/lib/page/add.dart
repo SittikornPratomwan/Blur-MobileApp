@@ -35,7 +35,7 @@ class _AddPageState extends State<AddPage> {
 		return Scaffold(
 			backgroundColor: Colors.white,
 			appBar: AppBar(
-				title: const Text('แจ้งซ่อม'),
+				title: const Text('Post'),
 				centerTitle: true,
 				backgroundColor: Colors.deepPurple[300],
 				foregroundColor: Colors.white,
