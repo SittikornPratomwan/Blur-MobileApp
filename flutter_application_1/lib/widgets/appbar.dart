@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../Drawer/drawer.dart';
-import '../Homepage/notification.dart';
+import '../page/notification.dart';
 
 typedef TabSelectedCallback = void Function(int index);
 

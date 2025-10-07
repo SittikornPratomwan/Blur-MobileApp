@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'services/snackbar.dart';
 import 'services/auth_service.dart';
-import '../Homepage/home.dart';
+import '../page/็็Homepage/home.dart';
 
 class SignUp extends StatefulWidget {
   const SignUp({Key? key}) : super(key: key);

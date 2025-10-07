@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter_application_1/page/%E0%B9%87%E0%B9%87Homepage/home.dart';
 import 'Authen/login_page.dart';
-import 'firebase_options.dart';
-import 'Homepage/home.dart';
+import 'firebase_options.dart'; // Import the file where HomePage is defined
 
 //123346685
 Future<void> main() async {
