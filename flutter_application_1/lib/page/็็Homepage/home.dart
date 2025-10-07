@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../add.dart';
+import '../post.dart';
 import '../list.dart';
 import 'home_tab.dart';
 import 'trending_tab.dart';
